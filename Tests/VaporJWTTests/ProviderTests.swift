@@ -6,5 +6,7 @@ class ProviderTests: XCTestCase {
         ("testExample", testExample),
     ]
 
-    func testExample() { }
+    func testExample() {
+
+    }
 }

@@ -18,7 +18,7 @@ public final class LoginMiddleware: Middleware {
     }
 
     public func respond(to req: Request, chainingTo next: Responder) throws -> Response {
-        let token = try req.jwt(verifyWith: signer)
+        let token = try req.jwt(verifyUsing: signer)
         
         // extract the expected identifier from the payload
         let payload: Payload

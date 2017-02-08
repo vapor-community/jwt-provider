@@ -86,7 +86,7 @@ public final class Provider: Vapor.Provider {
 
     /// Called to prepare the Droplet.
     public func boot(_ drop: Droplet) {
-        drop.setJWTSigner(signer: signer)
+        drop.setJWTSigner(signer)
     }
 
     /// Called after the Droplet has completed

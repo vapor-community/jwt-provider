@@ -1,5 +1,5 @@
 /// Errors thrown during the parsing, creation
-/// and verification of JWT tokens by this package.
+/// and verification of JWT tokens by this module.
 public struct AuthError: Swift.Error {
     public let code: Int
     public let reasonPhrase: String
@@ -11,7 +11,7 @@ public struct AuthError: Swift.Error {
         self.origin = origin
     }
 
-    public static func noAuthorizationHeader(_ origin: Swift.Error? = nil) -> Error {
+    public static func noAuthorizationHeader(_ origin: Swift.Error? = nil) -> AuthError {
         return self.init(
             code: 1,
             reasonPhrase: "No authorization header",
@@ -19,7 +19,7 @@ public struct AuthError: Swift.Error {
         )
     }
 
-    public static func invalidBearerAuthorization(_ origin: Swift.Error? = nil) -> Error {
+    public static func invalidBearerAuthorization(_ origin: Swift.Error? = nil) -> AuthError {
         return self.init(
             code: 2,
             reasonPhrase: "Malformed bearer in authorization header",
@@ -27,7 +27,7 @@ public struct AuthError: Swift.Error {
         )
     }
 
-    public static func invalidJWT(_ origin: Swift.Error? = nil) -> Error {
+    public static func invalidJWT(_ origin: Swift.Error? = nil) -> AuthError {
         return self.init(
             code: 3,
             reasonPhrase: "Invalid JWT",
@@ -35,7 +35,7 @@ public struct AuthError: Swift.Error {
         )
     }
 
-    public static func invalidJWTSignature(_ origin: Swift.Error? = nil) -> Error {
+    public static func invalidJWTSignature(_ origin: Swift.Error? = nil) -> AuthError {
         return self.init(
             code: 4,
             reasonPhrase: "Invalid JWT signature",
@@ -43,7 +43,7 @@ public struct AuthError: Swift.Error {
         )
     }
 
-    public static func invalidJWTPayload(_ origin: Swift.Error? = nil) -> Error {
+    public static func invalidJWTPayload(_ origin: Swift.Error? = nil) -> AuthError {
         return self.init(
             code: 5,
             reasonPhrase: "Invalid JWT Payload",
@@ -51,7 +51,7 @@ public struct AuthError: Swift.Error {
         )
     }
 
-    public static func jwtSignatureFailed(_ origin: Swift.Error? = nil) -> Error {
+    public static func jwtSignatureFailed(_ origin: Swift.Error? = nil) -> AuthError {
         return self.init(
             code: 6,
             reasonPhrase: "Signature failed verification",
@@ -59,7 +59,7 @@ public struct AuthError: Swift.Error {
         )
     }
 
-    public static func loginFailed(_ origin: Swift.Error? = nil) -> Error {
+    public static func loginFailed(_ origin: Swift.Error? = nil) -> AuthError {
         return self.init(
             code: 7,
             reasonPhrase: "Login failed",

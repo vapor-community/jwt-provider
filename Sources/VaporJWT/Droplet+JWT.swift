@@ -14,14 +14,14 @@ extension Droplet {
 
     /// Verifies the signature of a JWT
     /// using the droplet's main JWT signer
-    public func verifySignature(jwt: JWT) throws {
+    public func verifySignature(_ jwt: JWT) throws {
         let signer = try jwtSigner()
         try jwt.verify(using: signer)
     }
 
     /// Used internally to set the droplet's
     /// main JWT signer
-    internal func setJWTSigner(signer: Signer) {
+    internal func setJWTSigner(_ signer: Signer) {
         storage["jwtSigner"] = signer
     }
 }
