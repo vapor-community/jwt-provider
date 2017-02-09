@@ -9,6 +9,9 @@ public final class LoginMiddleware: Middleware {
     let signer: Signer
     let payloadType: Payload.Type
 
+    /// Create a LoginMiddleware specifying
+    /// the JWT signer and type of payload
+    /// that will be stored in the JWT
     public init(
         signer: Signer,
         payloadType: Payload.Type
@@ -18,12 +21,12 @@ public final class LoginMiddleware: Middleware {
     }
 
     public func respond(to req: Request, chainingTo next: Responder) throws -> Response {
-        let token = try req.jwt(verifyUsing: signer)
+        let jwt = try req.jwt(verifyUsing: signer)
         
         // extract the expected identifier from the payload
         let payload: Payload
         do {
-            payload = try payloadType.init(node: token.payload)
+            payload = try payloadType.init(node: jwt.payload)
         } catch {
             throw AuthError.invalidJWTPayload(error)
         }

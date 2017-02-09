@@ -18,16 +18,16 @@ extension Request {
         }
 
         // Parse the bearer string into a JWT
-        let token: JWT
+        let jwt: JWT
         do {
-            token = try JWT(token: bearer.string)
+            jwt = try JWT(token: bearer.string)
         } catch {
             throw AuthError.invalidJWT(error)
         }
 
-        try token.verify(using: signer)
+        try jwt.verify(using: signer)
 
-        return token
+        return jwt
     }
 }
 
