@@ -36,15 +36,12 @@ extension JWT {
     /// and throws `AuthError`s on failure
     public func verify(using signer: Signer) throws {
         // Verify the integrity and authenticity of the JWT
-        let signaturePassed: Bool
         do {
-            signaturePassed = try verifySignature(using: signer)
+            try verifySignature(using: signer)
+        } catch JWTError.verificationFailed {
+            throw AuthError.jwtSignatureVerificationFailed
         } catch {
             throw AuthError.invalidJWTSignature(origin: error)
-        }
-
-        guard signaturePassed else {
-            throw AuthError.jwtSignatureVerificationFailed
         }
     }
 }

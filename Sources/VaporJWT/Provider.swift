@@ -41,11 +41,18 @@ public final class Provider: Vapor.Provider {
                 throw ConfigError.missing(key: ["signer", "key"], file: "jwt", desiredType: String.self)
             }
 
-            guard let hmac = Provider.hmacAlgorithm(from: algorithm) else {
+            let bytes = key.bytes
+
+            switch algorithm {
+            case "hs256":
+                signer = HS256(key: bytes)
+            case "hs384":
+                signer = HS384(key: bytes)
+            case "hs512":
+                signer = HS512(key: bytes)
+            default:
                 throw ConfigError.unsupported(value: algorithm, key: ["signer", "algorithm"], file: "jwt")
             }
-
-            signer = hmac.init(key: key.bytes)
         case "rsa":
             guard let algorithm = signerConfig["algorithm"]?.string else {
                 throw ConfigError.missing(key: ["signer", "algorithm"], file: "jwt", desiredType: String.self)
@@ -55,11 +62,18 @@ public final class Provider: Vapor.Provider {
                 throw ConfigError.missing(key: ["signer", "key"], file: "jwt", desiredType: String.self)
             }
 
-            guard let hmac = Provider.rsaAlgorithm(from: algorithm) else {
+            let bytes = key.bytes.base64Decoded
+
+            switch algorithm {
+            case "rs256":
+                signer = try RS256(key: bytes)
+            case "rs384":
+                signer = try RS384(key: bytes)
+            case "rs512":
+                signer = try RS512(key: bytes)
+            default:
                 throw ConfigError.unsupported(value: algorithm, key: ["signer", "algorithm"], file: "jwt")
             }
-
-            signer = hmac.init(key: key.bytes.base64Decoded)
         case "esdca":
             guard let algorithm = signerConfig["algorithm"]?.string else {
                 throw ConfigError.missing(key: ["signer", "algorithm"], file: "jwt", desiredType: String.self)
@@ -69,11 +83,18 @@ public final class Provider: Vapor.Provider {
                 throw ConfigError.missing(key: ["signer", "key"], file: "jwt", desiredType: String.self)
             }
 
-            guard let hmac = Provider.ecdsaAlgorithm(from: algorithm) else {
+            let bytes = key.bytes
+
+            switch algorithm {
+            case "es256":
+                signer = ES256(key: bytes)
+            case "es384":
+                signer = ES384(key: bytes)
+            case "es512":
+                signer = ES512(key: bytes)
+            default:
                 throw ConfigError.unsupported(value: algorithm, key: ["signer", "algorithm"], file: "jwt")
             }
-
-            signer = hmac.init(key: key.bytes)
         default:
             throw ConfigError.unsupported(value: signerType, key: ["signer", "type"], file: "jwt")
         }
@@ -97,48 +118,5 @@ public final class Provider: Vapor.Provider {
     /// which is @noreturn.
     public func beforeRun(_ drop: Droplet) {
 
-    }
-}
-
-/// creation of JWT signers from various
-/// possible `jwt.json` configurations
-extension Provider {
-    static func hmacAlgorithm(from string: String) -> HMACSigner.Type? {
-        switch string {
-        case "hs256":
-            return HS256.self
-        case "hs384":
-            return HS384.self
-        case "hs512":
-            return HS512.self
-        default:
-            return nil
-        }
-    }
-
-    static func rsaAlgorithm(from string: String) -> RSASigner.Type? {
-        switch string {
-        case "rs256":
-            return RS256.self
-        case "rs384":
-            return RS384.self
-        case "rs512":
-            return RS512.self
-        default:
-            return nil
-        }
-    }
-
-    static func ecdsaAlgorithm(from string: String) -> ECDSASigner.Type? {
-        switch string {
-        case "es256":
-            return ES256.self
-        case "es384":
-            return ES384.self
-        case "es512":
-            return ES512.self
-        default:
-            return nil
-        }
     }
 }
