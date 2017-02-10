@@ -8,7 +8,10 @@ extension Droplet {
     /// or throws an error if not properly configured
     public func jwtSigner() throws -> Signer {
         guard let signer = storage[jwtSignerKey] as? Signer else {
-            throw ConfigError.noSigner()
+            struct NoJWTSigner: Error, CustomStringConvertible {
+                var description = "JWT signer not properly configured. Check your JWT provider."
+            }
+            throw ConfigError.unspecified(NoJWTSigner())
         }
 
         return signer

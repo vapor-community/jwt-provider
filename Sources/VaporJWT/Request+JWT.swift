@@ -9,12 +9,12 @@ extension Request {
     public func jwt(verifyUsing signer: Signer) throws -> JWT {
         // Try to get the authorization header
         guard let authHeader = auth.header else {
-            throw AuthError.noAuthorizationHeader()
+            throw AuthError.noAuthorizationHeader
         }
 
         // Try to retrieve the bearer token
         guard let bearer = authHeader.bearer else {
-            throw AuthError.invalidBearerAuthorization()
+            throw AuthError.invalidBearerAuthorization
         }
 
         // Parse the bearer string into a JWT
@@ -22,7 +22,7 @@ extension Request {
         do {
             jwt = try JWT(token: bearer.string)
         } catch {
-            throw AuthError.invalidJWT(error)
+            throw AuthError.invalidJWT(origin: error)
         }
 
         try jwt.verify(using: signer)
@@ -40,11 +40,11 @@ extension JWT {
         do {
             signaturePassed = try verifySignature(using: signer)
         } catch {
-            throw AuthError.invalidJWTSignature(error)
+            throw AuthError.invalidJWTSignature(origin: error)
         }
 
         guard signaturePassed else {
-            throw AuthError.jwtSignatureFailed()
+            throw AuthError.jwtSignatureVerificationFailed
         }
     }
 }

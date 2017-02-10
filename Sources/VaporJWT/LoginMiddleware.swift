@@ -28,7 +28,7 @@ public final class LoginMiddleware: Middleware {
         do {
             payload = try payloadType.init(node: jwt.payload)
         } catch {
-            throw AuthError.invalidJWTPayload(error)
+            throw AuthError.invalidJWTPayload(origin: error)
         }
 
         // Log the user in with an Identifier credential
@@ -37,7 +37,7 @@ public final class LoginMiddleware: Middleware {
             let credentials = try payload.makeCredentials()
             try req.auth.login(credentials, persist: false)
         } catch {
-            throw AuthError.loginFailed(error)
+            throw AuthError.loginFailed(origin: error)
         }
 
         return try next.respond(to: req)

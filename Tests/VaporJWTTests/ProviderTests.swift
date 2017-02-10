@@ -6,15 +6,5 @@ class ProviderTests: XCTestCase {
         ("testExample", testExample),
     ]
 
-    func testExample() {
-        let error = AuthError.invalidBearerAuthorization()
-
-        switch error {
-        case AuthError.noAuthorizationHeader():
-            print("foo")
-        case AuthError.invalidJWT():
-            print("bar")
-        default: break
-        }
-    }
+    func testExample() { XCTAssert(true) }
 }

@@ -1,89 +1,40 @@
 /// Errors thrown during the parsing, creation
 /// and verification of JWT tokens by this module.
-public struct AuthError: Swift.Error {
-    public let code: Int
-    public let reasonPhrase: String
-    public let origin: Swift.Error?
-
-    init(code: Int, reasonPhrase: String, origin: Swift.Error?) {
-        self.code = code
-        self.reasonPhrase = reasonPhrase
-        self.origin = origin
-    }
-
-    public static func noAuthorizationHeader(_ origin: Swift.Error? = nil) -> AuthError {
-        return self.init(
-            code: 1,
-            reasonPhrase: "No authorization header",
-            origin: origin
-        )
-    }
-
-    public static func invalidBearerAuthorization(_ origin: Swift.Error? = nil) -> AuthError {
-        return self.init(
-            code: 2,
-            reasonPhrase: "Malformed bearer in authorization header",
-            origin: origin
-        )
-    }
-
-    public static func invalidJWT(_ origin: Swift.Error? = nil) -> AuthError {
-        return self.init(
-            code: 3,
-            reasonPhrase: "Invalid JWT",
-            origin: origin
-        )
-    }
-
-    public static func invalidJWTSignature(_ origin: Swift.Error? = nil) -> AuthError {
-        return self.init(
-            code: 4,
-            reasonPhrase: "Invalid JWT signature",
-            origin: origin
-        )
-    }
-
-    public static func invalidJWTPayload(_ origin: Swift.Error? = nil) -> AuthError {
-        return self.init(
-            code: 5,
-            reasonPhrase: "Invalid JWT Payload",
-            origin: origin
-        )
-    }
-
-    public static func jwtSignatureFailed(_ origin: Swift.Error? = nil) -> AuthError {
-        return self.init(
-            code: 6,
-            reasonPhrase: "Signature failed verification",
-            origin: origin
-        )
-    }
-
-    public static func loginFailed(_ origin: Swift.Error? = nil) -> AuthError {
-        return self.init(
-            code: 7,
-            reasonPhrase: "Login failed",
-            origin: origin
-        )
-    }
-}
-
-extension AuthError: Equatable {
-    public static func ==(lhs: AuthError, rhs: AuthError) -> Bool {
-        return lhs.code == rhs.code
-    }
+public enum AuthError: Error {
+    case noAuthorizationHeader
+    case invalidBearerAuthorization
+    case invalidJWT(origin: Error)
+    case invalidJWTSignature(origin: Error)
+    case invalidJWTPayload(origin: Error)
+    case jwtSignatureVerificationFailed
+    case loginFailed(origin: Error)
+    case unspecified(Error)
 }
 
 extension AuthError: CustomStringConvertible {
     public var description: String {
-        let message: String
+        let reason: String
 
-        if let origin = origin {
-            message = "\(reasonPhrase): \(origin)"
-        } else {
-            message = reasonPhrase
+        switch self {
+        case .noAuthorizationHeader:
+            reason = "No authorization header"
+        case .invalidBearerAuthorization:
+            reason = "Malformed bearer in authorization header"
+        case .invalidJWT(let origin):
+            reason = "Invalid JWT: \(origin)"
+        case .invalidJWTSignature(let origin):
+            reason = "Invalid JWT signature: \(origin)"
+        case .invalidJWTPayload(let origin):
+            reason = "Invalid JWT payload: \(origin)"
+        case .jwtSignatureVerificationFailed:
+            reason = "JWT signature failed verification"
+        case .loginFailed(let origin):
+            reason = "Login failed: \(origin)"
+        case .unspecified(let error):
+            reason = "\(error)"
         }
-
-        return "JWT authentication failure: \(message)"
+        
+        return "JWT authentication failure: \(reason)"
     }
 }
+
