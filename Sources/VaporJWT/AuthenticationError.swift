@@ -1,6 +1,6 @@
 /// Errors thrown during the parsing, creation
 /// and verification of JWT tokens by this module.
-public enum AuthError: Error {
+public enum AuthenticationError: Error {
     case noAuthorizationHeader
     case invalidBearerAuthorization
     case invalidJWT(origin: Error)
@@ -11,7 +11,7 @@ public enum AuthError: Error {
     case unspecified(Error)
 }
 
-extension AuthError: CustomStringConvertible {
+extension AuthenticationError: CustomStringConvertible {
     public var description: String {
         let reason: String
 
