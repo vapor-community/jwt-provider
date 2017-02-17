@@ -41,7 +41,7 @@ public final class Provider: Vapor.Provider {
                 throw ConfigError.missing(key: ["signer", "key"], file: "jwt", desiredType: String.self)
             }
 
-            let bytes = key.bytes
+            let bytes = key.makeBytes()
 
             switch algorithm {
             case "hs256":
@@ -62,7 +62,7 @@ public final class Provider: Vapor.Provider {
                 throw ConfigError.missing(key: ["signer", "key"], file: "jwt", desiredType: String.self)
             }
 
-            let bytes = key.bytes.base64Decoded
+            let bytes = key.makeBytes().base64Decoded
 
             switch algorithm {
             case "rs256":
@@ -83,7 +83,7 @@ public final class Provider: Vapor.Provider {
                 throw ConfigError.missing(key: ["signer", "key"], file: "jwt", desiredType: String.self)
             }
 
-            let bytes = key.bytes
+            let bytes = key.makeBytes()
 
             switch algorithm {
             case "es256":
