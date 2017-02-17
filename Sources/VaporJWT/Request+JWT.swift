@@ -38,7 +38,7 @@ extension JWT {
         // Verify the integrity and authenticity of the JWT
         do {
             try verifySignature(using: signer)
-        } catch JWTError.verificationFailed {
+        } catch JWTError.signatureVerificationFailed {
             throw AuthError.jwtSignatureVerificationFailed
         } catch {
             throw AuthError.invalidJWTSignature(origin: error)
