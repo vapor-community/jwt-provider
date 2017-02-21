@@ -1,5 +1,6 @@
 import HTTP
 import JWT
+import Authentication
 
 extension Request {
     /// Parses and returns a JWT from the request
@@ -18,30 +19,9 @@ extension Request {
         }
 
         // Parse the bearer string into a JWT
-        let jwt: JWT
-        do {
-            jwt = try JWT(token: bearer.string)
-        } catch {
-            throw AuthenticationError.invalidJWT(origin: error)
-        }
-
-        try jwt.verify(using: signer)
+        let jwt = try JWT(token: bearer.string)
+        try jwt.verifySignature(using: signer)
 
         return jwt
-    }
-}
-
-extension JWT {
-    /// Verifies the JWT with a given signer
-    /// and throws `AuthError`s on failure
-    public func verify(using signer: Signer) throws {
-        // Verify the integrity and authenticity of the JWT
-        do {
-            try verifySignature(using: signer)
-        } catch JWTError.signatureVerificationFailed {
-            throw AuthenticationError.jwtSignatureVerificationFailed
-        } catch {
-            throw AuthenticationError.invalidJWTSignature(origin: error)
-        }
     }
 }
