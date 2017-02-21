@@ -15,9 +15,9 @@ public final class AuthenticationMiddleware<U: PayloadAuthenticatable>: Middlewa
     /// the JWT signer and type of payload
     /// that will be stored in the JWT
     public init(
-        signer: Signer,
-        userType: U.Type = U.self,
-        claims: [Claim] = []
+        _ signer: Signer,
+        _ claims: [Claim] = [],
+        _ userType: U.Type = U.self
     ) {
         self.signer = signer
         self.claims = claims
@@ -25,28 +25,18 @@ public final class AuthenticationMiddleware<U: PayloadAuthenticatable>: Middlewa
 
     public func respond(to req: Request, chainingTo next: Responder) throws -> Response {
         let jwt = try req.jwt(verifyUsing: signer)
-        
-        // extract the expected identifier from the payload
-        let payload: U.Payload
-        do {
-            // verify that the JWT fulfills the requirements
-            // expressed in our claims
-            try jwt.verifyClaims(claims)
 
-            // create Payload type from the raw payload
-            payload = try U.Payload.init(node: jwt.payload)
-        } catch {
-            throw AuthenticationError.invalidJWTPayload(origin: error)
-        }
+        // verify that the JWT fulfills the requirements
+        // expressed in our claims
+        try jwt.verifyClaims(claims)
+
+        // create Payload type from the raw payload
+        let payload = try U.Payload.init(node: jwt.payload)
 
         // Log the user in with an Identifier credential
         // This amounts to fetching the user from the DB
-        do {
-            let u = try U.authenticate(payload)
-            req.auth.authenticate(u)
-        } catch {
-            throw AuthenticationError.loginFailed(origin: error)
-        }
+        let u = try U.authenticate(payload)
+        req.auth.authenticate(u)
 
         return try next.respond(to: req)
     }
