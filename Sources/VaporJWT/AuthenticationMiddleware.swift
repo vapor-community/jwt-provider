@@ -7,7 +7,7 @@ import VaporAuth
 
 /// Parses JWT and creates an ephemeral session,
 /// logging the user in with credentials from the token.
-public final class AuthenticationMiddleware<U: PayloadAuthenticatable>: Middleware {
+public final class PayloadAuthenticationMiddleware<U: PayloadAuthenticatable>: Middleware {
     let signer: Signer
     let claims: [Claim]
 
@@ -31,7 +31,7 @@ public final class AuthenticationMiddleware<U: PayloadAuthenticatable>: Middlewa
         try jwt.verifyClaims(claims)
 
         // create Payload type from the raw payload
-        let payload = try U.Payload.init(node: jwt.payload)
+        let payload = try U.PayloadType.init(node: jwt.payload)
 
         // Log the user in with an Identifier credential
         // This amounts to fetching the user from the DB
