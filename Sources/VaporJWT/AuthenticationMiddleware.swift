@@ -3,7 +3,7 @@ import JWT
 import HTTP
 import Node
 import Authentication
-import VaporAuth
+import AuthProvider
 
 /// Parses JWT and creates an ephemeral session,
 /// logging the user in with credentials from the token.
