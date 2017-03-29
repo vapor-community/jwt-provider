@@ -1,5 +1,5 @@
 import XCTest
-@testable import VaporJWTTests
+@testable import JWTProviderTests
 
 XCTMain([
      testCase(ProviderTests.allTests),

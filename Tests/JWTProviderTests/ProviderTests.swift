@@ -1,5 +1,5 @@
 import XCTest
-@testable import VaporJWT
+@testable import JWTProvider
 
 class ProviderTests: XCTestCase {
     static var allTests = [
