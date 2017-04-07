@@ -1,49 +1,20 @@
-# JWT Provider for Vapor
-
-Adds JWT support to the Vapor web framework.
-
-## Add the dependency to Package.swift
-
-```JSON
-.Package(url: "https://github.com/vapor/jwt-provider.git", ...)
-```
-
-## Add the provider to your Droplet instance
-
-```swift
-import Vapor
-import VaporJWT
-
-let drop = Droplet()
-try drop.addProvider(VaporJWT.Provider.self)
-```
-
-## Config
-
-To build, the first place you'll want to look is the Config/ directory. In their, you should create a secrets folder and a nested `jwt.json`.
-
-```
-Config/
-  - jwt.json
-    secrets/
-      - jwt.json
-```
-
-The secrets folder is under the gitignore and shouldn't be committed.
-
-Here's an example `secrets/jwt.json`
-
-```json
-{
-    "signer": {
-        "type": "rsa",
-        "key": "...",
-        "algorithm": "rs256"
-    }
-}
-
-```
-
-## JWT
-
-For just JWT support, check out [vapor/jwt](https://github.com/vapor/jwt).
+<p align="center">
+    <img src="https://cloud.githubusercontent.com/assets/1342803/24798850/8777297c-1b98-11e7-82ce-fa01f567c564.png" width="320" alt="JWT Provider">
+    <br>
+    <br>
+    <a href="https://github.com/vapor/jwt-provider/blob/0.5.0/README.md">
+        <img src="http://img.shields.io/badge/read_the-docs-92A8D1.svg" alt="Documentation">
+    </a>
+    <a href="http://vapor.team">
+        <img src="http://vapor.team/badge.svg" alt="Slack Team">
+    </a>
+    <a href="LICENSE">
+        <img src="http://img.shields.io/badge/license-MIT-brightgreen.svg" alt="MIT License">
+    </a>
+    <a href="https://circleci.com/gh/vapor/jwt-provider">
+        <img src="https://circleci.com/gh/vapor/jwt-provider.svg?style=shield" alt="Continuous Integration">
+    </a>
+    <a href="https://swift.org">
+        <img src="http://img.shields.io/badge/swift-3.1-brightgreen.svg" alt="Swift 3.1">
+    </a>
+</center>
