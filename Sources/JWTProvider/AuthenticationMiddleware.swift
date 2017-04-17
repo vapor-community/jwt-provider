@@ -24,11 +24,11 @@ public final class PayloadAuthenticationMiddleware<U: PayloadAuthenticatable>: M
     }
 
     public func respond(to req: Request, chainingTo next: Responder) throws -> Response {
-        // verify the jwt against the signer and claims
+        // verify the jwt against the signer and claimsnt
         let jwt = try req.jwt(verifyUsing: signer, and: claims)
 
         // create Payload type from the raw payload
-        let payload = try U.PayloadType.init(node: jwt.payload)
+        let payload = try U.PayloadType.init(json: jwt.payload)
 
         // Log the user in with an Identifier credential
         // This amounts to fetching the user from the DB
