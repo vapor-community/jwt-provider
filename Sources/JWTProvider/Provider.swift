@@ -4,6 +4,8 @@ import JWT
 /// Adds required JWT objects to your application
 /// like token Signers
 public final class Provider: Vapor.Provider {
+    public static let repositoryName = "jwt-provider"
+    
     public let signer: Signer
     public init(signer: Signer) {
         self.signer = signer
@@ -13,10 +15,7 @@ public final class Provider: Vapor.Provider {
     /// the JWT objects
     public convenience init(config: Config) throws {
         guard let jwt = config["jwt"]?.object else {
-            struct NoJWTConfig: Error, CustomStringConvertible {
-                var description = "No `jwt.json` config file found."
-            }
-            throw ConfigError.unspecified(NoJWTConfig())
+            throw ConfigError.missingFile("jwt")
         }
 
         guard let signerConfig = jwt["signer"]?.object else {
@@ -76,7 +75,7 @@ public final class Provider: Vapor.Provider {
             }
         case "esdca":
             guard let algorithm = signerConfig["algorithm"]?.string else {
-                throw ConfigError.missing(key: ["signer", "algorithm"], file: "jwt", desiredType: String.self)
+                throw ConfigError.missing(key: ["signer", "algorithm"], file: "jwt", desiredType  : String.self)
             }
 
             guard let key = signerConfig["key"]?.string else {
@@ -101,10 +100,12 @@ public final class Provider: Vapor.Provider {
 
         self.init(signer: signer)
     }
+    
+    public func boot(_ config: Config) throws { }
 
     /// Called to prepare the Droplet.
     public func boot(_ drop: Droplet) {
-        drop.set(signer)
+        drop.signer = signer
     }
 
     /// Called after the Droplet has completed
