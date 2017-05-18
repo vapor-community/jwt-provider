@@ -2,7 +2,7 @@
     <img src="https://cloud.githubusercontent.com/assets/1342803/24798850/8777297c-1b98-11e7-82ce-fa01f567c564.png" width="320" alt="JWT Provider">
     <br>
     <br>
-    <a href="https://docs.vapor.codes/2.0/JWT/package">
+    <a href="https://docs.vapor.codes/2.0/jwt/package/">
         <img src="http://img.shields.io/badge/read_the-docs-92A8D1.svg" alt="Documentation">
     </a>
     <a href="http://vapor.team">
