@@ -24,7 +24,7 @@ public final class PayloadAuthenticationMiddleware<U: PayloadAuthenticatable>: M
     }
 
     public func respond(to req: Request, chainingTo next: Responder) throws -> Response {
-        // verify the jwt against the signer and claimsnt
+        // verify the jwt against the signer and claims
         let jwt = try req.jwt(verifyUsing: signer, and: claims)
 
         // create Payload type from the raw payload
