@@ -24,6 +24,12 @@ public final class PayloadAuthenticationMiddleware<U: PayloadAuthenticatable>: M
     }
 
     public func respond(to req: Request, chainingTo next: Responder) throws -> Response {
+        // if the user has already been authenticated
+        // by a previous middleware, continue
+        if req.auth.isAuthenticated(U.self) {
+            return try next.respond(to: req)
+        }
+
         // verify the jwt against the signer and claims
         let jwt = try req.jwt(verifyUsing: signer, and: claims)
 
