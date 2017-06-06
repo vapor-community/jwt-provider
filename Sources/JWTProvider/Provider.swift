@@ -4,22 +4,85 @@ import JWT
 /// Adds required JWT objects to your application
 /// like token Signers
 public final class Provider: Vapor.Provider {
+
     public static let repositoryName = "jwt-provider"
     
-    public let signer: Signer
-    public init(signer: Signer) {
-        self.signer = signer
+    public let signers: [String: Signer]
+
+    public init(signers: [String: Signer]) {
+        self.signers = signers
     }
 
-    /// Parses a `jwt.json` config file to create
-    /// the JWT objects
     public convenience init(config: Config) throws {
-        guard let jwt = config["jwt"]?.object else {
+
+        if let jwks = config["jwks"]?.object {
+            self.init(signers: try Provider.signers(jwks: jwks))
+        } else if let jwt = config["jwt"]?.object {
+            self.init(signers: try Provider.signer(jwt: jwt))
+        } else {
             throw ConfigError.missingFile("jwt")
         }
+    }
+    
+    public func boot(_ config: Config) throws { }
+
+    /// Called to prepare the Droplet.
+    public func boot(_ drop: Droplet) {
+        drop.signers = self.signers
+    }
+
+    /// Called after the Droplet has completed
+    /// initialization and all provided items
+    /// have been accepted.
+    public func afterInit(_ drop: Droplet) {
+
+    }
+
+    /// Called before the Droplet begins serving
+    /// which is @noreturn.
+    public func beforeRun(_ drop: Droplet) {
+
+    }
+}
+
+fileprivate extension Provider {
+
+    /**
+     Parses a JSON Web Key Set `jwks.json` config file to create the JWT objects
+     */
+    fileprivate static func signers(jwks: [String: Config]) throws -> [String: Signer] {
+
+        guard let keys = jwks["keys"]?.array else {
+            throw ConfigError.missing(key: ["keys"], file: "jwks", desiredType: Array<Any>.self)
+        }
+
+        let jwkeys = keys.flatMap({ try? JSONWebKey(json: JSON($0)) })
+
+        var signers = [String: Signer]()
+
+        for jwk in jwkeys {
+
+            guard let signer = try? jwk.makeSigner() else {
+                continue
+            }
+
+            signers[jwk.kid] = signer
+        }
+
+        return signers
+    }
+
+    /**
+     Parses a `jwt.json` config file to create the JWT objects
+     */
+    fileprivate static func signer(jwt: [String: Config]) throws -> [String: Signer] {
 
         guard let signerConfig = jwt["signer"]?.object else {
             throw ConfigError.missing(key: ["signer"], file: "jwt", desiredType: Dictionary<String, Any>.self)
+        }
+
+        guard let kid = signerConfig["kid"]?.string else {
+            throw ConfigError.missing(key: ["kid"], file: "jwt", desiredType: String.self)
         }
 
         guard let signerType = signerConfig["type"]?.string else {
@@ -97,27 +160,7 @@ public final class Provider: Vapor.Provider {
         default:
             throw ConfigError.unsupported(value: signerType, key: ["signer", "type"], file: "jwt")
         }
-
-        self.init(signer: signer)
-    }
-    
-    public func boot(_ config: Config) throws { }
-
-    /// Called to prepare the Droplet.
-    public func boot(_ drop: Droplet) {
-        drop.signer = signer
-    }
-
-    /// Called after the Droplet has completed
-    /// initialization and all provided items
-    /// have been accepted.
-    public func afterInit(_ drop: Droplet) {
-
-    }
-
-    /// Called before the Droplet begins serving
-    /// which is @noreturn.
-    public func beforeRun(_ drop: Droplet) {
-
+        
+        return [kid: signer]
     }
 }

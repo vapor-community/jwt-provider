@@ -1,21 +1,21 @@
 import Vapor
 import JWT
 
-private let jwtSignerKey = "jwt-provider:signer"
+private let jwtSignersKey = "jwt-provider:signers"
 
 extension Droplet {
-    public internal(set) var signer: Signer? {
-        get { return storage[jwtSignerKey] as? Signer }
-        set { storage[jwtSignerKey] = newValue }
+    public internal(set) var signers: [String: Signer]? {
+        get { return storage[jwtSignersKey] as? [String: Signer] }
+        set { storage[jwtSignersKey] = newValue }
     }
     
-    /// Returns the main JWT signer
+    /// Returns the JWT signers
     /// or throws an error if not properly configured
-    public func assertSigner() throws -> Signer {
-        guard let signer = self.signer else {
+    public func assertSigners() throws -> [String: Signer] {
+        guard let signers = self.signers else {
             throw JWTProviderError.noJWTSigner
         }
 
-        return signer
+        return signers
     }
 }

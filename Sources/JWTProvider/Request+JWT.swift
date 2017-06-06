@@ -8,8 +8,21 @@ extension Request {
     /// Parses and returns a JWT from the request
     /// if one exists.
     /// The JWT will also be verified with the supplied
-    /// signer.
+    /// signers.
     public func jwt(verifyUsing signer: Signer, and claims: [Claim] = []) throws -> JWT {
+
+        let jwt = try self.parseJWT()
+        
+        // verify the claims
+        try jwt.verifyClaims(claims)
+        
+        // cache the verified jwt
+        verifiedJWT = jwt
+
+        return jwt
+    }
+
+    func parseJWT() throws -> JWT {
         // Try to get the authorization header
         guard let authHeader = auth.header else {
             throw AuthenticationError.noAuthorizationHeader
@@ -21,18 +34,9 @@ extension Request {
         }
 
         // Parse the bearer string into a JWT
-        let jwt = try JWT(token: bearer.string)
-        try jwt.verifySignature(using: signer)
-        
-        // verify the claims
-        try jwt.verifyClaims(claims)
-        
-        // cache the verified jwt
-        verifiedJWT = jwt
-
-        return jwt
+        return try JWT(token: bearer.string)
     }
-    
+
     public var verifiedJWT: JWT? {
         get { return storage[verifiedJWTKey] as? JWT }
         set { storage[verifiedJWTKey] = newValue }
