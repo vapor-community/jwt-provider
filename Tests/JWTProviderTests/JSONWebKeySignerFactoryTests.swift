@@ -9,8 +9,6 @@
 import XCTest
 import JSON
 import Vapor
-import CTLS
-import Crypto
 @testable import JWTProvider
 
 class JSONWebKeySignerFactoryTests: XCTestCase {
@@ -21,28 +19,17 @@ class JSONWebKeySignerFactoryTests: XCTestCase {
 
     func testMakeRS256Signer() throws {
 
-/*
-        let d = "PP5EBOLYAMa3E-2GNEoOu2M1c174dyy3g1kMroWiG5qQAqDTrP2cy-q_r8cI0XvD6rHbvanD1qmJg1l0dgaVuPAgZeqf5ei2NNEumZf1-Oak5KK0_VxnkmRLyNmz1SGBN80sWexLpQL9ZHU4CH655RGx3bXcmW1k6Nljs--H6t5pF5amhDW8eUKxj1hF8Nqti8EMRVCVRcAzMSzaeexiZbTArTyEXVsl43-NB6Ihqhw4kkxBz8lI_mfT3f9eyEFZn__Pb9dPxZYslQZwz427hm1of5OLqW-ElUMw9KhEmkdes_PRdsgOZQ3WpO2CWilFf5fh1j-NnfqGkgaMpJyr4Q".makeBytes().base64Decoded
+        let privateJWK = try JSON(bytes: "{\"kty\":\"RSA\",\"d\":\"L4z0tz7QWE0aGuOA32YqCSnrSYKdBTPFDILCdfHonzfP7WMPibz4jWxu_FzNk9s4Dh-uN2lV3NGW10pAsnqffD89LtYanRjaIdHnLW_PFo5fEL2yltK7qMB9hO1JegppKCfoc79W4-dr-4qy1Op0B3npOP-DaUYlNamfDmIbQW32UKeJzdGIn-_ryrBT7hQW6_uHLS2VFPPk0rNkPPKZYoNaqGnJ0eaFFF-dFwiThXIpPz--dxTAL8xYf275rjG8C9lh6awOfJSIdXMVuQITWf62E0mSQPR2-219bShMKriDYcYLbT3BJEgOkRBBHGuHo9R5TN298anxZqV1u5jtUQ\",\"e\":\"AQAB\",\"use\":\"sig\",\"kid\":\"1234\",\"alg\":\"RS256\",\"n\":\"gWu7yhI35FScdKARYboJoAm-T7yJfJ9JTvAok_RKOJYcL8oLIRSeLqQX83PPZiWdKTdXaiGWntpDu6vW7VAb-HWPF6tNYSLKDSmR3sEu2488ibWijZtNTCKOSb_1iAKAI5BJ80LTqyQtqaKzT0XUBtMsde8vX1nKI05UxujfTX3kqUtkZgLv1Yk1ZDpUoLOWUTtCm68zpjtBrPiN8bU2jqCGFyMyyXys31xFRzz4MyJ5tREHkQCzx0g7AvW0ge_sBTPQ2U6NSkcZvQyDbfDv27cMUHij1Sjx16SY9a2naTuOgamjtUzyClPLVpchX-McNyS0tjdxWY_yRL9MYuw4AQ\"}")
 
-        let n = "z9CG1hMY182Hsc3MyMHtQOGFI2vJuj_kh-tzgPSur0oWIrHQMP6ZhvYUV-BHczKiDrCycRE6hpKx5p6CLrO_vMmEYsslr2G65J13FirFAymWjlJnoBY2QiTyxdG4WuRjaNc8gRtKiO6jFP8dZVvTENttAbaXXjAu7lfEcjwg4PYbdN9o_OvJtT0Dh98mbQdmvlZZJ6iQnfynnWTwl4AtIHoUJ3Mbd5QcN3qEFKpL4frHUPnk6eNu7ZvsqkXv6p1lPmPfOLjHgrJfW3Q4z9K6yPV3zkgSZX0e9axKdU7sGFutXzDdQq1uFOMN1IA4ZJnGrTSiYH2YrslV9VRWN7c1VQ".makeBytes().base64Decoded
-
-        d.withUnsafeBufferPointer { p in
-            p.
-        }
-
-        var base = rawKeyPointer.baseAddress
-        let count = rawKey.count
-
-        if let cPrivateKey = d2i_RSAPrivateKey(nil, &base, count)
-*/
-        let privateJWK = try JSON(bytes: "{\"kty\":\"RSA\",\"d\":\"PP5EBOLYAMa3E-2GNEoOu2M1c174dyy3g1kMroWiG5qQAqDTrP2cy-q_r8cI0XvD6rHbvanD1qmJg1l0dgaVuPAgZeqf5ei2NNEumZf1-Oak5KK0_VxnkmRLyNmz1SGBN80sWexLpQL9ZHU4CH655RGx3bXcmW1k6Nljs--H6t5pF5amhDW8eUKxj1hF8Nqti8EMRVCVRcAzMSzaeexiZbTArTyEXVsl43-NB6Ihqhw4kkxBz8lI_mfT3f9eyEFZn__Pb9dPxZYslQZwz427hm1of5OLqW-ElUMw9KhEmkdes_PRdsgOZQ3WpO2CWilFf5fh1j-NnfqGkgaMpJyr4Q\",\"e\":\"AQAB\",\"use\":\"sig\",\"kid\":\"1234\",\"alg\":\"RS256\",\"n\":\"z9CG1hMY182Hsc3MyMHtQOGFI2vJuj_kh-tzgPSur0oWIrHQMP6ZhvYUV-BHczKiDrCycRE6hpKx5p6CLrO_vMmEYsslr2G65J13FirFAymWjlJnoBY2QiTyxdG4WuRjaNc8gRtKiO6jFP8dZVvTENttAbaXXjAu7lfEcjwg4PYbdN9o_OvJtT0Dh98mbQdmvlZZJ6iQnfynnWTwl4AtIHoUJ3Mbd5QcN3qEFKpL4frHUPnk6eNu7ZvsqkXv6p1lPmPfOLjHgrJfW3Q4z9K6yPV3zkgSZX0e9axKdU7sGFutXzDdQq1uFOMN1IA4ZJnGrTSiYH2YrslV9VRWN7c1VQ\"}")
+        let publicJWK = try JSON(bytes: "{\"kty\":\"RSA\",\"e\":\"AQAB\",\"use\":\"sig\",\"kid\":\"1234\",\"alg\":\"RS256\",\"n\":\"gWu7yhI35FScdKARYboJoAm-T7yJfJ9JTvAok_RKOJYcL8oLIRSeLqQX83PPZiWdKTdXaiGWntpDu6vW7VAb-HWPF6tNYSLKDSmR3sEu2488ibWijZtNTCKOSb_1iAKAI5BJ80LTqyQtqaKzT0XUBtMsde8vX1nKI05UxujfTX3kqUtkZgLv1Yk1ZDpUoLOWUTtCm68zpjtBrPiN8bU2jqCGFyMyyXys31xFRzz4MyJ5tREHkQCzx0g7AvW0ge_sBTPQ2U6NSkcZvQyDbfDv27cMUHij1Sjx16SY9a2naTuOgamjtUzyClPLVpchX-McNyS0tjdxWY_yRL9MYuw4AQ\"}")
 
         let privateSigner = try JSONWebKeySignerFactory(jwk: privateJWK).makeSigner()
 
+        let publicSigner = try JSONWebKeySignerFactory(jwk: publicJWK).makeSigner()
 
         let signature = try privateSigner.sign(message: "test")
 
         try privateSigner.verify(signature: signature, message: "test".makeBytes())
-//        try publicSigner.verify(signature: signature, message: "test".makeBytes())
+        try publicSigner.verify(signature: signature, message: "test".makeBytes())
     }
 }

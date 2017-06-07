@@ -37,28 +37,28 @@ public struct JSONWebKeySignerFactory: SignerFactory {
         switch kty {
         case "rsa":
 
-            let key: Bytes
+            let key: RSAKey
 
-            if let n: String = try jwk.get(JSONKey.n.rawValue), let d: String = try jwk.get(JSONKey.d.rawValue) {
-                // Private key
-                key = n.makeBytes().base64Decoded + d.makeBytes().base64Decoded
+            if let d: String = try jwk.get(JSONKey.d.rawValue), let n: String = try jwk.get(JSONKey.n.rawValue) {
+                // Private key with modulus and exponent
+                key = try RSAKey(n: n, d: d)
             } else if let n: String = try jwk.get(JSONKey.n.rawValue), let e: String = try jwk.get(JSONKey.e.rawValue) {
                 // Public key with modulus and exponent
-                key = n.makeBytes()
+                key = try RSAKey(n: n, e: e)
             } else if let x5c: String = try jwk.get(JSONKey.x5c.rawValue) {
                 // Public key with x5c
-                key = x5c.makeBytes()
+                throw JSONWebKeySignerFactoryError.missingSigningKey
             } else {
                 throw JSONWebKeySignerFactoryError.missingSigningKey
             }
 
             switch alg {
             case "rs256":
-                return try RS256(key: key.hexEncoded)
+                return RS256(rsaKey: key)
             case "rs384":
-                return try RS384(key: key)
+                return RS384(rsaKey: key)
             case "rs512":
-                return try RS512(key: key)
+                return RS512(rsaKey: key)
             default:
                 throw JSONWebKeySignerFactoryError.unsupportedSignerAlgorithm(alg)
             }
