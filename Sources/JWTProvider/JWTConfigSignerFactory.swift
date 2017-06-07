@@ -1,5 +1,5 @@
 //
-//  JWTSignerFactory.swift
+//  JWTConfigSignerFactory.swift
 //  JWTProvider
 //
 //  Created by Valerio Mazzeo on 07/06/2017.
@@ -10,20 +10,15 @@ import Foundation
 import JWT
 import Vapor
 
-public struct JWTSignerFactory: SignerFactory {
+public struct JWTConfigSignerFactory: SignerFactory {
 
-    /// Legacy `jwt.json` config file
-    public let jwt: JSON
+    public let signerConfig: Config
 
-    public init(jwt: JSON) {
-        self.jwt = jwt
+    public init(signerConfig: Config) {
+        self.signerConfig = signerConfig
     }
 
     public func makeSigner() throws -> Signer {
-
-        guard let signerConfig = jwt["signer"]?.object else {
-            throw ConfigError.missing(key: ["signer"], file: "jwt", desiredType: Dictionary<String, Any>.self)
-        }
 
         guard let signerType = signerConfig["type"]?.string else {
             throw ConfigError.missing(key: ["signer", "type"], file: "jwt", desiredType: String.self)

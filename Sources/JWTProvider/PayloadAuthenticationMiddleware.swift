@@ -16,6 +16,16 @@ public final class PayloadAuthenticationMiddleware<U: PayloadAuthenticatable>: M
     /// the JWT signers and type of payload
     /// that will be stored in the JWT
     public init(
+        _ signer: Signer,
+        _ claims: [Claim] = [],
+        _ userType: U.Type = U.self
+        ) {
+        self.signers = ["none": signer]
+        self.claims = claims
+        self.jwksURL = nil
+    }
+
+    public init(
         _ signers: SignerMap,
         _ claims: [Claim] = [],
         _ userType: U.Type = U.self
@@ -44,29 +54,24 @@ public final class PayloadAuthenticationMiddleware<U: PayloadAuthenticatable>: M
 
         let jwt = try req.parseJWT()
 
-        if let kid = jwt.headers["kid"]?.string, let jwksURL = self.jwksURL {
+        let filteredSigners = try self.signers(for: jwt)
 
-            // Verify using only the signer with matching kid
-            _ = try req.jwt(verifyUsing: try self.signer(for: kid, jwksURL: jwksURL), and: claims)
+        // Try to use all the signers until one matches
+        var verified = false
 
-        } else {
-            // Try to use all the signers until one matches
-            var verified = false
+        for signer in filteredSigners {
 
-            for signer in signers.values {
-
-                do {
-                    _ = try req.jwt(verifyUsing: signer, and: claims)
-                    verified = true
-                    break
-                } catch {
-                    continue
-                }
+            do {
+                _ = try req.jwt(verifyUsing: signer, and: claims)
+                verified = true
+                break
+            } catch {
+                continue
             }
+        }
 
-            guard verified else {
-                throw JWTProviderError.noJWTSigner
-            }
+        guard verified else {
+            throw JWTProviderError.noJWTSigner
         }
 
         // create Payload type from the raw payload
@@ -80,24 +85,42 @@ public final class PayloadAuthenticationMiddleware<U: PayloadAuthenticatable>: M
         return try next.respond(to: req)
     }
 
-    private func signer(for kid: String, jwksURL: String) throws -> Signer {
+    // Identify which signers to use to verify the signature
+    private func signers(for jwt: JWT) throws -> [Signer] {
+
+        if let legacySigner = self.signers["_legacy"] {
+            // Legacy signer, ignore any kid
+            return [legacySigner]
+        }
+
+        guard let kid = jwt.keyIdentifier else {
+            // The token doesn't include a kid, try to verify using all the signers
+            return Array(self.signers.values)
+        }
 
         if let signer = self.signers[kid] {
-            return signer
-        }
+            // We have a signer with that kid cached
+            return [signer]
+        } else if let jwksURL = self.jwksURL {
+            // We don't have any signer cached with that kid, but we have a jwks url
 
-        // Get remote jwks.json
-        guard let jwks = try EngineClientFactory().get(jwksURL).json else {
+            // Get remote jwks.json
+            guard let jwks = try EngineClientFactory().get(jwksURL).json else {
+                throw JWTProviderError.noJWTSigner
+            }
+
+            // Update cache
+            self.signers = try SignerMap(jwks: jwks)
+
+            // Search again
+            guard let signer = self.signers[kid] else {
+                throw JWTProviderError.noJWTSigner
+            }
+
+            return [signer]
+
+        } else {
             throw JWTProviderError.noJWTSigner
         }
-
-        // Update cache
-        self.signers = try SignerMap(jwks: jwks)
-
-        guard let signer = self.signers[kid] else {
-            throw JWTProviderError.noJWTSigner
-        }
-
-        return signer
     }
 }

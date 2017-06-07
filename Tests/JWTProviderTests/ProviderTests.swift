@@ -5,24 +5,11 @@ import Vapor
 class ProviderTests: XCTestCase {
 
     static let allTests = [
-        ("testBootWithJWKS", testBootWithJWKS),
         ("testBootWithJWKSURL", testBootWithJWKSURL),
         ("testBootWithJWTSigner", testBootWithJWTSigner),
+        ("testBootWithJWTSigners", testBootWithJWTSigners),
         ("testBootWithoutProvider", testBootWithoutProvider)
     ]
-
-    func testBootWithJWKS() throws {
-
-        var config = try Config(arguments: ["vapor", "serve", "--env=test"])
-        try config.set("jwks.keys", [JSON()])
-
-        try config.addProvider(JWTProvider.Provider.self)
-
-        let drop = try Droplet(config: config, middleware: [])
-
-        XCTAssertNotNil(drop.signers)
-        XCTAssertNil(drop.jwksURL)
-    }
 
     func testBootWithJWKSURL() throws {
 
@@ -40,7 +27,6 @@ class ProviderTests: XCTestCase {
     func testBootWithJWTSigner() throws {
 
         var config = try Config(arguments: ["vapor", "serve", "--env=test"])
-        try config.set("jwt.signer.kid", "1234")
         try config.set("jwt.signer.type", "unsigned")
 
         try config.addProvider(JWTProvider.Provider.self)
@@ -48,7 +34,26 @@ class ProviderTests: XCTestCase {
         let drop = try Droplet(config: config, middleware: [])
 
         XCTAssertNotNil(drop.signers)
+        XCTAssertNotNil(drop.signers?["_legacy"])
+        XCTAssertNil(drop.jwksURL)
+    }
+
+    func testBootWithJWTSigners() throws {
+
+        var config = try Config(arguments: ["vapor", "serve", "--env=test"])
+        try config.set("jwt.signers", [
+                Config(["kid": "1234", "type": "unsigned"]),
+                Config(["kid": "5678", "type": "unsigned"])
+            ])
+
+        try config.addProvider(JWTProvider.Provider.self)
+
+        let drop = try Droplet(config: config, middleware: [])
+
+        XCTAssertNotNil(drop.signers)
+        XCTAssertEqual(drop.signers?.count, 2)
         XCTAssertNotNil(drop.signers?["1234"])
+        XCTAssertNotNil(drop.signers?["5678"])
         XCTAssertNil(drop.jwksURL)
     }
 

@@ -8,11 +8,14 @@ extension Request {
     /// Parses and returns a JWT from the request
     /// if one exists.
     /// The JWT will also be verified with the supplied
-    /// signers.
+    /// signer.
     public func jwt(verifyUsing signer: Signer, and claims: [Claim] = []) throws -> JWT {
 
         let jwt = try self.parseJWT()
-        
+
+        // verify the signature
+        try jwt.verifySignature(using: signer)
+
         // verify the claims
         try jwt.verifyClaims(claims)
         

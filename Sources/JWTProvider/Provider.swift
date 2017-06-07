@@ -23,17 +23,17 @@ public final class Provider: Vapor.Provider {
 
     public convenience init(config: Config) throws {
 
-        if let jwks = config["jwks"] {
-            self.init(signers: try SignerMap(jwks: JSON(jwks)))
-        } else if let jwt = config["jwt"] {
-
-            if let jwksURL = jwt["jwks-url"]?.string {
-                self.init(jwksURL: jwksURL)
-            } else {
-                self.init(signers: try SignerMap(jwt: JSON(jwt)))
-            }
-        } else {
+        guard let jwt = config["jwt"] else {
             throw ConfigError.missingFile("jwt")
+        }
+
+        // There should always be at least one signer or a jwks URL
+        if let signers = try SignerMap(jwt: jwt) {
+            self.init(signers: signers)
+        } else if let jwksURL = jwt["jwks-url"]?.string {
+            self.init(jwksURL: jwksURL)
+        } else {
+            throw ConfigError.missing(key: ["jwks-url"], file: "jwt", desiredType: String.self)
         }
     }
     

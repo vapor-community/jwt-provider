@@ -7,6 +7,7 @@
 //
 
 import Foundation
+import Vapor
 import JWT
 
 /// Key: kid, Value: signer
@@ -14,9 +15,6 @@ public typealias SignerMap = [String: Signer]
 
 public extension Dictionary where Key == String, Value == Signer {
 
-    /**
-     Parses a JSON Web Key Set `jwks.json` config file to create a SignerMap
-     */
     public init(jwks: JSON) throws {
 
         guard let keys = jwks["keys"]?.array else {
@@ -41,25 +39,43 @@ public extension Dictionary where Key == String, Value == Signer {
         self = map
     }
 
-    /**
-     Parses a `jwt.json` config file to create a SignerMap
-     */
-    public init(jwt: JSON) throws {
+    public init?(jwt: Config) throws {
 
-        guard let signerConfig = jwt["signer"]?.object else {
-            throw SignerMapError.missingKey("signer")
+        if let signersConfig = jwt["signers"]?.array {
+
+            var map = SignerMap()
+
+            guard !signersConfig.isEmpty else {
+                throw SignerMapError.noSigners
+            }
+
+            for signerConfig in signersConfig {
+
+                let signer = try JWTConfigSignerFactory(signerConfig: signerConfig).makeSigner()
+
+                guard let kid = signerConfig["kid"]?.string else {
+                    throw ConfigError.missing(key: ["signers.kid"], file: "jwt", desiredType: String.self)
+                }
+
+                map[kid] = signer
+            }
+
+            self = map
+
+        } else if let signerConfig = jwt["signer"] {
+
+            // Legacy
+            let signer = try JWTConfigSignerFactory(signerConfig: signerConfig).makeSigner()
+
+            self = ["_legacy": signer]
+
+        } else {
+            return nil
         }
-
-        guard let kid: String = signerConfig["kid"]?.string else {
-            throw SignerMapError.missingKey("kid")
-        }
-
-        let signer = try JWTSignerFactory(jwt: jwt).makeSigner()
-
-        self = [kid: signer]
     }
 }
 
 public enum SignerMapError: Swift.Error {
     case missingKey(String)
+    case noSigners
 }
