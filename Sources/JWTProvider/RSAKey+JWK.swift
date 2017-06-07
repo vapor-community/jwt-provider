@@ -14,37 +14,21 @@ public extension RSAKey {
 
     public init(n: String, e: String, d: String? = nil) throws {
 
-        let nBytes = n.makeBytes().base64URLDecoded
-        let eBytes = e.makeBytes().base64URLDecoded
+        let rsa = RSA_new()!
+        rsa.pointee.n = parseBignum(n)
+        rsa.pointee.e = parseBignum(e)
 
+        if let d = d {
+            rsa.pointee.d = parseBignum(d)
+            self = .private(rsa)
+        } else {
+            self = .public(rsa)
+        }
+    }
+}
 
-        let rsa = nBytes.withUnsafeBufferPointer({ nRawPointer -> RSAKey in
-
-            return eBytes.withUnsafeBufferPointer({ eRawPointer -> RSAKey in
-
-                if let dBytes = d?.makeBytes().base64URLDecoded {
-                    // Private Key
-                    return dBytes.withUnsafeBufferPointer({ dRawPointer -> RSAKey in
-                        let key = RSA_new()!
-
-                        key.pointee.n = BN_bin2bn(nRawPointer.baseAddress, Int32(nBytes.count), nil)
-                        key.pointee.e = BN_bin2bn(eRawPointer.baseAddress, Int32(eBytes.count), nil)
-                        key.pointee.d = BN_bin2bn(dRawPointer.baseAddress, Int32(dBytes.count), nil)
-
-                        return .private(key)
-                    })
-                } else {
-                    // Public Key
-                    let key = RSA_new()!
-
-                    key.pointee.n = BN_bin2bn(nRawPointer.baseAddress, Int32(nBytes.count), nil)
-                    key.pointee.e = BN_bin2bn(eRawPointer.baseAddress, Int32(eBytes.count), nil)
-
-                    return .public(key)
-                }
-            })
-        })
-
-        self = rsa
+private func parseBignum(_ s: String) -> UnsafeMutablePointer<BIGNUM> {
+    return s.makeBytes().base64URLDecoded.withUnsafeBufferPointer { p in
+        return BN_bin2bn(p.baseAddress, Int32(p.count), nil)
     }
 }
