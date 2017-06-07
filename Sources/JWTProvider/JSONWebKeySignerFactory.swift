@@ -16,7 +16,6 @@ public struct JSONWebKeySignerFactory: SignerFactory {
         case alg
         case kid
         case kty
-        case x5c
         case d
         case n
         case e
@@ -40,11 +39,7 @@ public struct JSONWebKeySignerFactory: SignerFactory {
             let key: RSAKey
 
             if let n: String = try jwk.get(JSONKey.n.rawValue), let e: String = try jwk.get(JSONKey.e.rawValue) {
-                // Public key with modulus and exponent
                 key = try RSAKey(n: n, e: e, d: try? jwk.get(JSONKey.d.rawValue))
-            } else if let x5c: String = try jwk.get(JSONKey.x5c.rawValue) {
-                // Public key with x5c
-                throw JSONWebKeySignerFactoryError.missingSigningKey
             } else {
                 throw JSONWebKeySignerFactoryError.missingSigningKey
             }
