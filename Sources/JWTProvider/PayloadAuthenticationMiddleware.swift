@@ -8,7 +8,7 @@ import AuthProvider
 /// Parses JWT and creates an ephemeral session,
 /// logging the user in with credentials from the token.
 public final class PayloadAuthenticationMiddleware<U: PayloadAuthenticatable>: Middleware {
-    internal private(set) var signers: [String: Signer]
+    internal private(set) var signers: SignerMap
     let claims: [Claim]
     let jwksURL: String?
 
@@ -16,22 +16,23 @@ public final class PayloadAuthenticationMiddleware<U: PayloadAuthenticatable>: M
     /// the JWT signers and type of payload
     /// that will be stored in the JWT
     public init(
-        _ signers: [String: Signer],
+        _ signers: SignerMap,
         _ claims: [Claim] = [],
         _ userType: U.Type = U.self
     ) {
         self.signers = signers
         self.claims = claims
+        self.jwksURL = nil
     }
 
     public init(
-        _ jwksURL: String? = nil,
+        _ jwksURL: String,
         _ claims: [Claim] = [],
         _ userType: U.Type = U.self
         ) {
-        self.signers = [String: Signer]()
-        self.jwksURL = jwksURL
+        self.signers = SignerMap()
         self.claims = claims
+        self.jwksURL = jwksURL
     }
 
     public func respond(to req: Request, chainingTo next: Responder) throws -> Response {
@@ -43,10 +44,10 @@ public final class PayloadAuthenticationMiddleware<U: PayloadAuthenticatable>: M
 
         let jwt = try req.parseJWT()
 
-        if let kid = jwt.headers["kid"]?.string, self.jwksURL != nil {
+        if let kid = jwt.headers["kid"]?.string, let jwksURL = self.jwksURL {
 
-            // Verify using only the signers with matching kid
-            _ = try req.jwt(verifyUsing: try self.signer(for: kid), and: claims)
+            // Verify using only the signer with matching kid
+            _ = try req.jwt(verifyUsing: try self.signer(for: kid, jwksURL: jwksURL), and: claims)
 
         } else {
             // Try to use all the signers until one matches
@@ -68,8 +69,6 @@ public final class PayloadAuthenticationMiddleware<U: PayloadAuthenticatable>: M
             }
         }
 
-
-
         // create Payload type from the raw payload
         let payload = try U.PayloadType.init(json: jwt.payload)
 
@@ -81,18 +80,24 @@ public final class PayloadAuthenticationMiddleware<U: PayloadAuthenticatable>: M
         return try next.respond(to: req)
     }
 
-    private func signer(for kid: String) throws -> Signer {
+    private func signer(for kid: String, jwksURL: String) throws -> Signer {
 
         if let signer = self.signers[kid] {
             return signer
         }
 
-        /* GET jwks */
-
-        if true /* signer */ {
-
-        } else {
+        // Get remote jwks.json
+        guard let jwks = try EngineClientFactory().get(jwksURL).json else {
             throw JWTProviderError.noJWTSigner
         }
+
+        // Update cache
+        self.signers = try SignerMap(jwks: jwks)
+
+        guard let signer = self.signers[kid] else {
+            throw JWTProviderError.noJWTSigner
+        }
+
+        return signer
     }
 }
