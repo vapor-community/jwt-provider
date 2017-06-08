@@ -11,6 +11,7 @@ public final class PayloadAuthenticationMiddleware<U: PayloadAuthenticatable>: M
     internal private(set) var signers: SignerMap
     let claims: [Claim]
     let jwksURL: String?
+    let clientFactory: ClientFactoryProtocol?
 
     /// Create a LoginMiddleware specifying
     /// the JWT signers and type of payload
@@ -20,9 +21,10 @@ public final class PayloadAuthenticationMiddleware<U: PayloadAuthenticatable>: M
         _ claims: [Claim] = [],
         _ userType: U.Type = U.self
         ) {
-        self.signers = ["none": signer]
+        self.signers = ["_legacy": signer]
         self.claims = claims
         self.jwksURL = nil
+        self.clientFactory = nil
     }
 
     public init(
@@ -33,16 +35,19 @@ public final class PayloadAuthenticationMiddleware<U: PayloadAuthenticatable>: M
         self.signers = signers
         self.claims = claims
         self.jwksURL = nil
+        self.clientFactory = nil
     }
 
     public init(
         _ jwksURL: String,
         _ claims: [Claim] = [],
-        _ userType: U.Type = U.self
+        _ userType: U.Type = U.self,
+        clientFactory: ClientFactoryProtocol = EngineClientFactory()
         ) {
         self.signers = SignerMap()
         self.claims = claims
         self.jwksURL = jwksURL
+        self.clientFactory = clientFactory
     }
 
     public func respond(to req: Request, chainingTo next: Responder) throws -> Response {
@@ -105,7 +110,7 @@ public final class PayloadAuthenticationMiddleware<U: PayloadAuthenticatable>: M
             // We don't have any signer cached with that kid, but we have a jwks url
 
             // Get remote jwks.json
-            guard let jwks = try EngineClientFactory().get(jwksURL).json else {
+            guard let jwks = try self.clientFactory?.get(jwksURL).json else {
                 throw JWTProviderError.noJWTSigner
             }
 
