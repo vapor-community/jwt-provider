@@ -1,6 +1,36 @@
 import Vapor
 import JWT
 
+extension Droplet {
+    @available(*, deprecated, message: "Use signers instead.")
+    public internal(set) var signer: Signer? {
+        get { return self.signers?["_legacy"] }
+        set {
+            if let signer = newValue {
+
+                if self.signers != nil {
+                    self.signers?["_legacy"] = signer
+                } else {
+                    self.signers = ["_legacy": signer]
+                }
+            } else {
+                self.signers?["_legacy"] = nil
+            }
+        }
+    }
+
+    /// Returns the JWT signer
+    /// or throws an error if not properly configured
+    @available(*, deprecated, message: "Use assertSigners instead.")
+    public func assertSigner() throws -> Signer {
+        guard let signer = self.signer else {
+            throw JWTProviderError.noJWTSigner
+        }
+
+        return signer
+    }
+}
+
 private let jwtSignersKey = "jwt-provider:signers"
 
 extension Droplet {
