@@ -1,11 +1,3 @@
-//
-//  JSONWebKeySignerFactoryTests.swift
-//  JWTProvider
-//
-//  Created by Valerio Mazzeo on 07/06/2017.
-//
-//
-
 import XCTest
 import JSON
 import Vapor

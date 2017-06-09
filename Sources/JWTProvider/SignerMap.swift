@@ -1,11 +1,3 @@
-//
-//  SignerMap.swift
-//  JWTProvider
-//
-//  Created by Valerio Mazzeo on 07/06/2017.
-//
-//
-
 import Foundation
 import Vapor
 import JWT

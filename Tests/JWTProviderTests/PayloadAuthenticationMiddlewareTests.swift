@@ -1,11 +1,3 @@
-//
-//  PayloadAuthenticationMiddlewareTests.swift
-//  JWTProvider
-//
-//  Created by Valerio Mazzeo on 08/06/2017.
-//
-//
-
 import XCTest
 import JSON
 import Vapor
