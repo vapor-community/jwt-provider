@@ -20,7 +20,7 @@ public final class PayloadAuthenticationMiddleware<U: PayloadAuthenticatable>: M
         _ signer: Signer,
         _ claims: [Claim] = [],
         _ userType: U.Type = U.self
-        ) {
+    ) {
         self.signers = [jwtLegacySignerKey: signer]
         self.claims = claims
         self.jwksURL = nil
@@ -34,7 +34,7 @@ public final class PayloadAuthenticationMiddleware<U: PayloadAuthenticatable>: M
         _ signers: SignerMap,
         _ claims: [Claim] = [],
         _ userType: U.Type = U.self
-        ) {
+    ) {
         self.signers = signers
         self.claims = claims
         self.jwksURL = nil
@@ -46,7 +46,7 @@ public final class PayloadAuthenticationMiddleware<U: PayloadAuthenticatable>: M
         _ claims: [Claim] = [],
         _ userType: U.Type = U.self,
         clientFactory: ClientFactoryProtocol = EngineClientFactory()
-        ) {
+    ) {
         self.signers = SignerMap()
         self.claims = claims
         self.jwksURL = jwksURL
