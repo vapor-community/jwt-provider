@@ -14,7 +14,7 @@ public final class PayloadAuthenticationMiddleware<U: PayloadAuthenticatable>: M
     let clientFactory: ClientFactoryProtocol?
 
     /// Create a LoginMiddleware specifying
-    /// the JWT signers and type of payload
+    /// the JWT signer and type of payload
     /// that will be stored in the JWT
     public init(
         _ signer: Signer,
@@ -27,11 +27,14 @@ public final class PayloadAuthenticationMiddleware<U: PayloadAuthenticatable>: M
         self.clientFactory = nil
     }
 
+    /// Create a LoginMiddleware specifying
+    /// the JWT signers and type of payload
+    /// that will be stored in the JWT
     public init(
         _ signers: SignerMap,
         _ claims: [Claim] = [],
         _ userType: U.Type = U.self
-    ) {
+        ) {
         self.signers = signers
         self.claims = claims
         self.jwksURL = nil
@@ -121,9 +124,9 @@ public final class PayloadAuthenticationMiddleware<U: PayloadAuthenticatable>: M
             guard let signer = self.signers[kid] else {
                 throw JWTProviderError.noJWTSigner
             }
-
+            
             return [signer]
-
+            
         } else {
             throw JWTProviderError.noJWTSigner
         }

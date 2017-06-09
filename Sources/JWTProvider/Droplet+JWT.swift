@@ -52,12 +52,12 @@ extension Droplet {
     }
 }
 
-private let jwtJWKSURL = "jwt-provider:jwks-url"
+private let jwtJWKSURLKey = "jwt-provider:jwks-url"
 
 extension Droplet {
     public internal(set) var jwksURL: String? {
-        get { return storage[jwtJWKSURL] as? String }
-        set { storage[jwtJWKSURL] = newValue }
+        get { return storage[jwtJWKSURLKey] as? String }
+        set { storage[jwtJWKSURLKey] = newValue }
     }
 
     /// Returns the JWKS URL

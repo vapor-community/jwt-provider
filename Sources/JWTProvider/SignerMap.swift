@@ -17,12 +17,10 @@ public extension Dictionary where Key == String, Value == Signer {
 
         for key in keys {
 
-            guard let kid: String = try key.get("kid") else {
-                continue
-            }
-
-            guard let signer = try? JSONWebKeySignerFactory(jwk: key).makeSigner() else {
-                continue
+            guard let kid: String = try key.get("kid"),
+                let signer = try? JSONWebKeySignerFactory(jwk: key).makeSigner()
+                else {
+                    continue
             }
 
             map[kid] = signer
