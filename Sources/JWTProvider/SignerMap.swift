@@ -59,7 +59,7 @@ public extension Dictionary where Key == String, Value == Signer {
             // Legacy
             let signer = try JWTConfigSignerFactory(signerConfig: signerConfig).makeSigner()
 
-            self = ["_legacy": signer]
+            self = [jwtLegacySignerKey: signer]
 
         } else {
             return nil

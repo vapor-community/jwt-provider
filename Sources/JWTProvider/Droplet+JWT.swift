@@ -1,20 +1,22 @@
 import Vapor
 import JWT
 
+let jwtLegacySignerKey = "jwtLegacySignerKey"
+
 extension Droplet {
     @available(*, deprecated, message: "Use signers instead.")
     public internal(set) var signer: Signer? {
-        get { return self.signers?["_legacy"] }
+        get { return self.signers?[jwtLegacySignerKey] }
         set {
             if let signer = newValue {
 
                 if self.signers != nil {
-                    self.signers?["_legacy"] = signer
+                    self.signers?[jwtLegacySignerKey] = signer
                 } else {
-                    self.signers = ["_legacy": signer]
+                    self.signers = [jwtLegacySignerKey: signer]
                 }
             } else {
-                self.signers?["_legacy"] = nil
+                self.signers?[jwtLegacySignerKey] = nil
             }
         }
     }

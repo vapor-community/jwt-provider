@@ -21,7 +21,7 @@ public final class PayloadAuthenticationMiddleware<U: PayloadAuthenticatable>: M
         _ claims: [Claim] = [],
         _ userType: U.Type = U.self
         ) {
-        self.signers = ["_legacy": signer]
+        self.signers = [jwtLegacySignerKey: signer]
         self.claims = claims
         self.jwksURL = nil
         self.clientFactory = nil
@@ -93,7 +93,7 @@ public final class PayloadAuthenticationMiddleware<U: PayloadAuthenticatable>: M
     // Identify which signers to use to verify the signature
     private func signers(for jwt: JWT) throws -> [Signer] {
 
-        if let legacySigner = self.signers["_legacy"] {
+        if let legacySigner = self.signers[jwtLegacySignerKey] {
             // Legacy signer, ignore any kid
             return [legacySigner]
         }
