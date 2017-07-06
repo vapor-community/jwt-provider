@@ -6,10 +6,28 @@ import JWT
 public final class Provider: Vapor.Provider {
 
     public static let repositoryName = "jwt-provider"
-    
-    private let signers: SignerMap?
 
-    private let jwksURL: String?
+    @available(*, deprecated, message: "Use signers instead.")
+    public var signer: Signer {
+
+        if let legacySigner = self.signers?[jwtLegacySignerKey] {
+            return legacySigner
+        } else if let signer = self.signers?.first?.value {
+            return signer
+        } else {
+            fatalError("Trying to access a legacy signer when none has been specified.")
+        }
+    }
+
+    public let signers: SignerMap?
+
+    public let jwksURL: String?
+
+    @available(*, deprecated, message: "Use init(signers: SignerMap) instead.")
+    public init(signer: Signer) {
+        self.signers = [jwtLegacySignerKey: signer]
+        self.jwksURL = nil
+    }
 
     public init(signers: SignerMap) {
         self.signers = signers

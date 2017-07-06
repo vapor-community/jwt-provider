@@ -19,8 +19,8 @@ public extension Dictionary where Key == String, Value == Signer {
 
             guard let kid: String = try key.get("kid"),
                 let signer = try? JSONWebKeySignerFactory(jwk: key).makeSigner()
-                else {
-                    continue
+            else {
+                continue
             }
 
             map[kid] = signer

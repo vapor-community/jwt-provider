@@ -1,7 +1,7 @@
 import Vapor
 import JWT
 
-let jwtLegacySignerKey = "jwtLegacySignerKey"
+let jwtLegacySignerKey = "jwt-providers:legacy-signer"
 
 extension Droplet {
     @available(*, deprecated, message: "Use signers instead.")
@@ -64,7 +64,7 @@ extension Droplet {
     /// or throws an error if not properly configured
     public func assertJWKSURL() throws -> String {
         guard let jwksURL = self.jwksURL else {
-            throw JWTProviderError.noJWKSURL
+            throw JWTProviderError.noJWTSigner
         }
 
         return jwksURL
