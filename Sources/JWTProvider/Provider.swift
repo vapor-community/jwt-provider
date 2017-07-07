@@ -99,13 +99,14 @@ public final class Provider: Vapor.Provider {
         }
 
         self.init(signer: signer)
+        config.signer = signer
     }
     
     public func boot(_ config: Config) throws { }
 
     /// Called to prepare the Droplet.
     public func boot(_ drop: Droplet) {
-        drop.signer = signer
+
     }
 
     /// Called after the Droplet has completed
