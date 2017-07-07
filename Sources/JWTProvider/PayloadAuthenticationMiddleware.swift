@@ -79,7 +79,7 @@ public final class PayloadAuthenticationMiddleware<U: PayloadAuthenticatable>: M
         }
 
         guard verified else {
-            throw JWTProviderError.noJWTSigner
+            throw JWTProviderError.noVerifiedJWT
         }
 
         // create Payload type from the raw payload
