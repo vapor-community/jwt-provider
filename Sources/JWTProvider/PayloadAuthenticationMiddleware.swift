@@ -8,8 +8,10 @@ import AuthProvider
 /// Parses JWT and creates an ephemeral session,
 /// logging the user in with credentials from the token.
 public final class PayloadAuthenticationMiddleware<U: PayloadAuthenticatable>: Middleware {
-    let signer: Signer
+    internal private(set) var signers: SignerMap
     let claims: [Claim]
+    let jwksURL: String?
+    let clientFactory: ClientFactoryProtocol?
 
     /// Create a LoginMiddleware specifying
     /// the JWT signer and type of payload
@@ -19,8 +21,36 @@ public final class PayloadAuthenticationMiddleware<U: PayloadAuthenticatable>: M
         _ claims: [Claim] = [],
         _ userType: U.Type = U.self
     ) {
-        self.signer = signer
+        self.signers = [jwtLegacySignerKey: signer]
         self.claims = claims
+        self.jwksURL = nil
+        self.clientFactory = nil
+    }
+
+    /// Create a LoginMiddleware specifying
+    /// the JWT signers and type of payload
+    /// that will be stored in the JWT
+    public init(
+        _ signers: SignerMap,
+        _ claims: [Claim] = [],
+        _ userType: U.Type = U.self
+    ) {
+        self.signers = signers
+        self.claims = claims
+        self.jwksURL = nil
+        self.clientFactory = nil
+    }
+
+    public init(
+        _ jwksURL: String,
+        _ claims: [Claim] = [],
+        _ userType: U.Type = U.self,
+        clientFactory: ClientFactoryProtocol = EngineClientFactory()
+    ) {
+        self.signers = SignerMap()
+        self.claims = claims
+        self.jwksURL = jwksURL
+        self.clientFactory = clientFactory
     }
 
     public func respond(to req: Request, chainingTo next: Responder) throws -> Response {
@@ -30,8 +60,27 @@ public final class PayloadAuthenticationMiddleware<U: PayloadAuthenticatable>: M
             return try next.respond(to: req)
         }
 
-        // verify the jwt against the signer and claims
-        let jwt = try req.jwt(verifyUsing: signer, and: claims)
+        let jwt = try req.parseJWT()
+
+        let filteredSigners = try self.signers(for: jwt)
+
+        // Try to use all the signers until one matches
+        var verified = false
+
+        for signer in filteredSigners {
+
+            do {
+                _ = try req.jwt(verifyUsing: signer, and: claims)
+                verified = true
+                break
+            } catch {
+                continue
+            }
+        }
+
+        guard verified else {
+            throw JWTProviderError.noVerifiedJWT
+        }
 
         // create Payload type from the raw payload
         let payload = try U.PayloadType.init(json: jwt.payload)
@@ -42,5 +91,44 @@ public final class PayloadAuthenticationMiddleware<U: PayloadAuthenticatable>: M
         req.auth.authenticate(u)
 
         return try next.respond(to: req)
+    }
+
+    // Identify which signers to use to verify the signature
+    private func signers(for jwt: JWT) throws -> [Signer] {
+
+        if let legacySigner = self.signers[jwtLegacySignerKey] {
+            // Legacy signer, ignore any kid
+            return [legacySigner]
+        }
+
+        guard let kid = jwt.keyIdentifier else {
+            // The token doesn't include a kid, try to verify using all the signers
+            return Array(self.signers.values)
+        }
+
+        if let signer = self.signers[kid] {
+            // We have a signer with that kid cached
+            return [signer]
+        } else if let jwksURL = self.jwksURL {
+            // We don't have any signer cached with that kid, but we have a jwks url
+
+            // Get remote jwks.json
+            guard let jwks = try self.clientFactory?.get(jwksURL).json else {
+                throw JWTProviderError.noJWTSigner
+            }
+
+            // Update cache
+            self.signers = try SignerMap(jwks: jwks)
+
+            // Search again
+            guard let signer = self.signers[kid] else {
+                throw JWTProviderError.noJWTSigner
+            }
+            
+            return [signer]
+            
+        } else {
+            throw JWTProviderError.noJWTSigner
+        }
     }
 }
