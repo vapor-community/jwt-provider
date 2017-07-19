@@ -101,23 +101,11 @@ public final class Provider: Vapor.Provider {
         self.init(signer: signer)
     }
     
-    public func boot(_ config: Config) throws { }
-
-    /// Called to prepare the Droplet.
-    public func boot(_ drop: Droplet) {
-        drop.signer = signer
+    public func boot(_ config: Config) throws {
+        config.signer = signer
     }
 
-    /// Called after the Droplet has completed
-    /// initialization and all provided items
-    /// have been accepted.
-    public func afterInit(_ drop: Droplet) {
+    public func boot(_ drop: Droplet) throws {}
 
-    }
-
-    /// Called before the Droplet begins serving
-    /// which is @noreturn.
-    public func beforeRun(_ drop: Droplet) {
-
-    }
+    public func beforeRun(_ drop: Droplet) throws {}
 }
