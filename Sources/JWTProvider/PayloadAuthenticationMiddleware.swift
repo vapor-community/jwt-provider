@@ -64,22 +64,24 @@ public final class PayloadAuthenticationMiddleware<U: PayloadAuthenticatable>: M
 
         let filteredSigners = try self.signers(for: jwt)
 
-        // Try to use all the signers until one matches
-        var verified = false
+        // Default Error
+        var error: Swift.Error? = JWTError.signatureVerificationFailed
 
+        // Try to use all the signers until one matches
         for signer in filteredSigners {
 
             do {
-                _ = try req.jwt(verifyUsing: signer, and: claims)
-                verified = true
+                _ = try req.jwt(verifyUsing: signer, and: self.claims)
+                error = nil
                 break
-            } catch {
+            } catch let jwtError {
+                error = jwtError
                 continue
             }
         }
 
-        guard verified else {
-            throw JWTProviderError.noVerifiedJWT
+        if let error = error {
+            throw error
         }
 
         // create Payload type from the raw payload
