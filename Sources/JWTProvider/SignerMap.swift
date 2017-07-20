@@ -30,8 +30,7 @@ public extension Dictionary where Key == String, Value == Signer {
     }
 
     public init?(jwt: Config) throws {
-
-        if let signersConfig = jwt["signers"]?.array {
+        if let signersConfig = jwt["signers"]?.object {
 
             var map = SignerMap()
 
