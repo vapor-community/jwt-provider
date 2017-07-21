@@ -45,7 +45,9 @@ class PayloadAuthenticationMiddlewareTests: XCTestCase {
 
         let middleware = PayloadAuthenticationMiddleware<MockUser>(signers)
 
-        _ = try middleware.respond(to: request, chainingTo: MockResponder())
+        XCTAssertThrowsError(try middleware.respond(to: request, chainingTo: MockResponder()), "noVerifiedJWT") { error in
+            XCTAssertEqual(error as? JWTProviderError, JWTProviderError.noVerifiedJWT)
+        }
     }
 
     func testAuthenticateWithIdentifiedToken() throws {
