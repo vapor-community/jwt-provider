@@ -62,27 +62,9 @@ public final class PayloadAuthenticationMiddleware<U: PayloadAuthenticatable>: M
 
         let jwt = try req.parseJWT()
 
-        let filteredSigners = try self.signers(for: jwt)
+        let signer = try self.signer(for: jwt)
 
-        // Default Error
-        var error: Swift.Error? = JWTError.signatureVerificationFailed
-
-        // Try to use all the signers until one matches
-        for signer in filteredSigners {
-
-            do {
-                _ = try req.jwt(verifyUsing: signer, and: self.claims)
-                error = nil
-                break
-            } catch let jwtError {
-                error = jwtError
-                continue
-            }
-        }
-
-        if let error = error {
-            throw error
-        }
+        _ = try req.jwt(verifyUsing: signer, and: self.claims)
 
         // create Payload type from the raw payload
         let payload = try U.PayloadType.init(json: jwt.payload)
@@ -95,22 +77,23 @@ public final class PayloadAuthenticationMiddleware<U: PayloadAuthenticatable>: M
         return try next.respond(to: req)
     }
 
-    // Identify which signers to use to verify the signature
-    private func signers(for jwt: JWT) throws -> [Signer] {
+    // Identify which signers to use to verify the signature,
+    // based on kid
+    private func signer(for jwt: JWT) throws -> Signer {
 
         if let legacySigner = self.signers[jwtLegacySignerKey] {
             // Legacy signer, ignore any kid
-            return [legacySigner]
+            return legacySigner
         }
 
         guard let kid = jwt.keyIdentifier else {
-            // The token doesn't include a kid, try to verify using all the signers
-            return Array(self.signers.values)
+            // The token doesn't include a kid
+            throw JWTProviderError.noVerifiedJWT
         }
 
         if let signer = self.signers[kid] {
             // We have a signer with that kid cached
-            return [signer]
+            return signer
         } else if let jwksURL = self.jwksURL {
             // We don't have any signer cached with that kid, but we have a jwks url
 
@@ -127,7 +110,7 @@ public final class PayloadAuthenticationMiddleware<U: PayloadAuthenticatable>: M
                 throw JWTProviderError.noJWTSigner
             }
             
-            return [signer]
+            return signer
             
         } else {
             throw JWTProviderError.noJWTSigner
