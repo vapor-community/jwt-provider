@@ -86,7 +86,7 @@ class PayloadAuthenticationMiddlewareTests: XCTestCase {
 
     func testAuthenticateWithJWKSURL() throws {
 
-        let privateSigner = try JSONWebKeySignerFactory(jwk: PayloadAuthenticationMiddlewareTests.privateJWK).makeSigner()
+        let privateSigner = try JWKSignerFactory(jwk: PayloadAuthenticationMiddlewareTests.privateJWK).makeSigner()
 
         let jwt = try JWT(additionalHeaders: [KeyIDHeader(identifier: "1234")], payload: JSON(), signer: privateSigner)
 

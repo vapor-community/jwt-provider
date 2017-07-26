@@ -18,7 +18,7 @@ public extension Dictionary where Key == String, Value == Signer {
         for key in keys {
 
             guard let kid: String = try key.get("kid"),
-                let signer = try? JSONWebKeySignerFactory(jwk: key).makeSigner()
+                let signer = try? JWKSignerFactory(jwk: key).makeSigner()
             else {
                 continue
             }
@@ -30,8 +30,7 @@ public extension Dictionary where Key == String, Value == Signer {
     }
 
     public init?(jwt: Config) throws {
-
-        if let signersConfig = jwt["signers"]?.array {
+        if let signersConfig = jwt["signers"]?.object {
 
             var map = SignerMap()
 
@@ -39,14 +38,8 @@ public extension Dictionary where Key == String, Value == Signer {
                 throw SignerMapError.noSigners
             }
 
-            for signerConfig in signersConfig {
-
+            for (kid, signerConfig) in signersConfig {
                 let signer = try JWTConfigSignerFactory(signerConfig: signerConfig).makeSigner()
-
-                guard let kid = signerConfig["kid"]?.string else {
-                    throw ConfigError.missing(key: ["signers.kid"], file: "jwt", desiredType: String.self)
-                }
-
                 map[kid] = signer
             }
 

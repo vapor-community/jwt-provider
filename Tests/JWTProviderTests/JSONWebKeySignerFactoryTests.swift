@@ -15,9 +15,9 @@ class JSONWebKeySignerFactoryTests: XCTestCase {
 
         let publicJWK = try JSON(bytes: "{\"kty\":\"RSA\",\"e\":\"AQAB\",\"use\":\"sig\",\"kid\":\"1234\",\"alg\":\"RS256\",\"n\":\"gWu7yhI35FScdKARYboJoAm-T7yJfJ9JTvAok_RKOJYcL8oLIRSeLqQX83PPZiWdKTdXaiGWntpDu6vW7VAb-HWPF6tNYSLKDSmR3sEu2488ibWijZtNTCKOSb_1iAKAI5BJ80LTqyQtqaKzT0XUBtMsde8vX1nKI05UxujfTX3kqUtkZgLv1Yk1ZDpUoLOWUTtCm68zpjtBrPiN8bU2jqCGFyMyyXys31xFRzz4MyJ5tREHkQCzx0g7AvW0ge_sBTPQ2U6NSkcZvQyDbfDv27cMUHij1Sjx16SY9a2naTuOgamjtUzyClPLVpchX-McNyS0tjdxWY_yRL9MYuw4AQ\"}")
 
-        let privateSigner = try JSONWebKeySignerFactory(jwk: privateJWK).makeSigner()
+        let privateSigner = try JWKSignerFactory(jwk: privateJWK).makeSigner()
 
-        let publicSigner = try JSONWebKeySignerFactory(jwk: publicJWK).makeSigner()
+        let publicSigner = try JWKSignerFactory(jwk: publicJWK).makeSigner()
 
         let signature = try privateSigner.sign(message: "test")
 

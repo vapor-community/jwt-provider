@@ -42,8 +42,8 @@ class ProviderTests: XCTestCase {
 
         var config = try Config(arguments: ["vapor", "serve", "--env=test"])
         try config.set("jwt.signers", [
-                Config(["kid": "1234", "type": "unsigned"]),
-                Config(["kid": "5678", "type": "unsigned"])
+                "1234": Config(["type": "unsigned"]),
+                "5678": Config(["type": "unsigned"])
             ])
 
         try config.addProvider(JWTProvider.Provider.self)
