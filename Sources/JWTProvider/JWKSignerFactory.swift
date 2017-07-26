@@ -2,8 +2,7 @@ import Foundation
 import JWT
 import JSON
 
-public struct JSONWebKeySignerFactory: SignerFactory {
-
+public struct JWKSignerFactory: SignerFactory {
     private enum JSONKey: String {
         case alg
         case kid
@@ -33,7 +32,7 @@ public struct JSONWebKeySignerFactory: SignerFactory {
             if let n: String = try jwk.get(JSONKey.n.rawValue), let e: String = try jwk.get(JSONKey.e.rawValue) {
                 key = try RSAKey(n: n, e: e, d: try? jwk.get(JSONKey.d.rawValue))
             } else {
-                throw JSONWebKeySignerFactoryError.missingSigningKey
+                throw JWKSignerFactoryError.missingSigningKey
             }
 
             switch alg {
@@ -44,15 +43,15 @@ public struct JSONWebKeySignerFactory: SignerFactory {
             case "rs512":
                 return RS512(rsaKey: key)
             default:
-                throw JSONWebKeySignerFactoryError.unsupportedSignerAlgorithm(alg)
+                throw JWKSignerFactoryError.unsupportedSignerAlgorithm(alg)
             }
         default:
-            throw JSONWebKeySignerFactoryError.unsupportedSignerType(kty)
+            throw JWKSignerFactoryError.unsupportedSignerType(kty)
         }
     }
 }
 
-public enum JSONWebKeySignerFactoryError: Swift.Error {
+public enum JWKSignerFactoryError: Swift.Error {
     case missingSigningKey
     case unsupportedSignerType(String)
     case unsupportedSignerAlgorithm(String)

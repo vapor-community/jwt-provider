@@ -51,7 +51,7 @@ public final class Provider: Vapor.Provider {
         } else if let jwksURL = jwt["jwks-url"]?.string {
             self.init(jwksURL: jwksURL)
         } else {
-            throw ConfigError.missing(key: ["jwks-url"], file: "jwt", desiredType: String.self)
+            throw ConfigError.missing(key: ["jwks-url' or 'signers"], file: "jwt", desiredType: String.self)
         }
     }
     
