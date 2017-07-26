@@ -23,7 +23,7 @@ extension Droplet {
 
     /// Returns the JWT signer
     /// or throws an error if not properly configured
-    @available(*, deprecated, message: "Use assertSigners instead.")
+    @available(*, deprecated, message: "Use assertSigner(kid:) or assertSigners() instead.")
     public func assertSigner() throws -> Signer {
         guard let signer = self.signer else {
             throw JWTProviderError.noJWTSigner
@@ -49,6 +49,15 @@ extension Droplet {
         }
 
         return signers
+    }
+
+    /// Returns the JWT signer with the supplied identifier key
+    public func assertSigner(kid: String) throws -> Signer {
+        let signers = try assertSigners()
+        guard let signer = signers[kid] else {
+            throw JWTProviderError.noJWTSigner
+        }
+        return signer
     }
 }
 
