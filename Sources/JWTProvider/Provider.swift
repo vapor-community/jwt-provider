@@ -63,13 +63,6 @@ public final class Provider: Vapor.Provider {
         drop.jwksURL = self.jwksURL
     }
 
-    /// Called after the Droplet has completed
-    /// initialization and all provided items
-    /// have been accepted.
-    public func afterInit(_ drop: Droplet) {
-
-    }
-
     /// Called before the Droplet begins serving
     /// which is @noreturn.
     public func beforeRun(_ drop: Droplet) {
