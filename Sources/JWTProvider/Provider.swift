@@ -35,15 +35,12 @@ public final class Provider: Vapor.Provider {
         }
     }
     
-    public func boot(_ config: Config) throws { }
-
-    /// Called to prepare the Droplet.
-    public func boot(_ drop: Droplet) {
-        drop.signers = self.signers
-        drop.jwksURL = self.jwksURL
+    public func boot(_ config: Config) throws {
+        config.signers = signers
+        config.jwksURL = self.jwksURL
     }
 
-    /// Called before the Droplet begins serving
-    /// which is @noreturn.
+    public func boot(_ drop: Droplet) throws { }
+
     public func beforeRun(_ drop: Droplet) { }
 }
