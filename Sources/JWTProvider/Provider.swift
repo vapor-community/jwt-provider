@@ -37,7 +37,7 @@ public final class Provider: Vapor.Provider {
     
     public func boot(_ config: Config) throws {
         config.signers = signers
-        config.jwksURL = self.jwksURL
+        config.jwksURL = jwksURL
     }
 
     public func boot(_ drop: Droplet) throws { }
