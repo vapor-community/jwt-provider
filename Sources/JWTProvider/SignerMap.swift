@@ -13,7 +13,7 @@ public extension Dictionary where Key == String, Value == Signer {
             throw SignerMapError.missingKey("keys")
         }
 
-        var map = [String: Signer]()
+        var map = SignerMap()
 
         for key in keys {
 
@@ -50,7 +50,7 @@ public extension Dictionary where Key == String, Value == Signer {
             // Legacy
             let signer = try JWTConfigSignerFactory(signerConfig: signerConfig).makeSigner()
 
-            self = [jwtLegacySignerKey: signer]
+            self = SignerMap(legacySigner: signer)
 
         } else {
             return nil

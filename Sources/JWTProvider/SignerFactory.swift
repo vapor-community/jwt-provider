@@ -1,4 +1,3 @@
-import Foundation
 import JWT
 
 public protocol SignerFactory {

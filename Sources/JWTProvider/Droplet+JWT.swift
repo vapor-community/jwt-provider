@@ -1,81 +1,48 @@
-import Vapor
+// `Signer`s used to be stored on the `Droplet`'s storage.
+// They have since been moved to `Config` to enable access
+// to signers in `Configinitializable` objects
+// (eg. `Providers`).
+// This file makes sure the `Signer`s can still be accessed
+// through from the Droplet.
+
 import JWT
+import Vapor
 
-let jwtLegacySignerKey = "jwt-providers:legacy-signer"
-
-extension Droplet {
-    @available(*, deprecated, message: "Use signers instead.")
-    public internal(set) var signer: Signer? {
-        get { return self.signers?[jwtLegacySignerKey] }
-        set {
-            if let signer = newValue {
-
-                if self.signers != nil {
-                    self.signers?[jwtLegacySignerKey] = signer
-                } else {
-                    self.signers = [jwtLegacySignerKey: signer]
-                }
-            } else {
-                self.signers?[jwtLegacySignerKey] = nil
-            }
-        }
-    }
-
-    /// Returns the JWT signer
-    /// or throws an error if not properly configured
-    @available(*, deprecated, message: "Use assertSigner(kid:) or assertSigners() instead.")
-    public func assertSigner() throws -> Signer {
-        guard let signer = self.signer else {
-            throw JWTProviderError.noJWTSigner
-        }
-
-        return signer
-    }
-}
-
-private let jwtSignersKey = "jwt-provider:signers"
+// MARK: Signer map access (via Config)
 
 extension Droplet {
+
+    /// Returns the JWT signers
     public internal(set) var signers: SignerMap? {
-        get { return storage[jwtSignersKey] as? SignerMap }
-        set { storage[jwtSignersKey] = newValue }
+        get { return config.signers }
+        set { config.signers = newValue }
     }
     
     /// Returns the JWT signers
     /// or throws an error if not properly configured
     public func assertSigners() throws -> SignerMap {
-        guard let signers = self.signers else {
-            throw JWTProviderError.noJWTSigner
-        }
-
-        return signers
+        return try config.assertSigners()
     }
 
     /// Returns the JWT signer with the supplied identifier key
     public func assertSigner(kid: String) throws -> Signer {
-        let signers = try assertSigners()
-        guard let signer = signers[kid] else {
-            throw JWTProviderError.noJWTSigner
-        }
-        return signer
+        return try config.assertSigner(kid: kid)
     }
 }
 
-private let jwtJWKSURLKey = "jwt-provider:jwks-url"
+// MARK: JSON Web Key Set (JWKS) URL access (via Config)
 
 extension Droplet {
+
+    /// Returns the JWKS URL
     public internal(set) var jwksURL: String? {
-        get { return storage[jwtJWKSURLKey] as? String }
-        set { storage[jwtJWKSURLKey] = newValue }
+        get { return config.jwksURL }
+        set { config.jwksURL = newValue }
     }
 
     /// Returns the JWKS URL
     /// or throws an error if not properly configured
     public func assertJWKSURL() throws -> String {
-        guard let jwksURL = self.jwksURL else {
-            throw JWTProviderError.noJWTSigner
-        }
-
-        return jwksURL
+        return try config.assertJWKSURL()
     }
 }

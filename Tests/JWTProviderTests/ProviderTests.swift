@@ -34,7 +34,7 @@ class ProviderTests: XCTestCase {
         let drop = try Droplet(config: config, middleware: [])
 
         XCTAssertNotNil(drop.signers)
-        XCTAssertNotNil(drop.signers?[jwtLegacySignerKey])
+        XCTAssertNotNil(drop.signers?.legacySigner)
         XCTAssertNil(drop.jwksURL)
     }
 
