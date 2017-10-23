@@ -4,6 +4,8 @@ import Vapor
 import Transport
 import HTTP
 import JWT
+import AuthProvider
+
 @testable import JWTProvider
 
 class PayloadAuthenticationMiddlewareTests: XCTestCase {
@@ -14,6 +16,7 @@ class PayloadAuthenticationMiddlewareTests: XCTestCase {
         ("testAuthenticateWithIdentifiedToken", testAuthenticateWithIdentifiedToken),
         ("testAuthenticateWithIdentifiedTokenWithNoMatchingSigner", testAuthenticateWithIdentifiedTokenWithNoMatchingSigner),
         ("testAuthenticateWithJWKSURL", testAuthenticateWithJWKSURL),
+        ("testAuthenticateWithNonParsableToken", testAuthenticateWithNonParsableToken)
     ]
 
     func testAuthenticateWithLegacySigner() throws {
@@ -105,6 +108,23 @@ class PayloadAuthenticationMiddlewareTests: XCTestCase {
         let middleware = PayloadAuthenticationMiddleware<MockUser>("http://my.domain.com/well-known/jwks.json", clientFactory: mockClientFactory)
 
         _ = try middleware.respond(to: request, chainingTo: MockResponder())
+    }
+
+
+    func testAuthenticateWithNonParsableToken() throws {
+
+        let request = Request(
+            method: .get,
+            uri: "http://localhost/test",
+            headers: [HeaderKey.authorization: "Bearer nonparsablejwttoken"]
+        )
+
+        let signers = ["1234": Unsigned(), "5678": Unsigned()]
+        let middleware = PayloadAuthenticationMiddleware<MockUser>(signers)
+
+        XCTAssertThrowsError(try middleware.respond(to: request, chainingTo: MockResponder()), "invalidCredentials") { error in
+            XCTAssertTrue((error as? JWTError)?.status == .unauthorized)
+        }
     }
 }
 
